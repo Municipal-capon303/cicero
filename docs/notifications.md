@@ -12,6 +12,8 @@ curl -sk -X POST https://127.0.0.1:8090/api/notify \
 
 The text renders through the same (cloned) TTS voice as replies and plays in the browser immediately — or, if you're mid-conversation, right after the current turn so it never talks over you. If no browser is connected, the notification is parked (up to 10, for 4 hours) and spoken to the next client that connects. Requires a fixed `web_voice.token` in config.
 
+Every notification that is delivered (or parked) is also handed to the brain as one-shot context for your next turn — so a follow-up that doesn't name its topic, like *"take care of it"* or *"call me about that"*, refers to the most recent notification without any re-explaining. Notifications deferred by quiet hours (queued for the morning briefing, not parked) don't inject context at send time; when the briefing delivers them as a spoken call, the briefing passes its context the same way.
+
 ## Kanban watch
 
 Cicero announces the agent's task board on its own. The daemon polls a harness CLI you configure (`command` — required; hermes shown as the example) and speaks up when a task finishes, blocks, or lands in review — "The coder finished the task: fix the flaky test." No hooks needed on the agent side; anything that can print the board as JSON works:

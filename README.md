@@ -13,6 +13,7 @@
 - **~1 second to first spoken word** (on a local NVIDIA GPU) — local [faster-whisper](https://github.com/SYSTRAN/faster-whisper) speech recognition, sentence-streamed speech synthesis, latency-covering filler clips. Measured end-to-end through a real tool-calling agent, not a parrot.
 - **Any voice, cloned locally** — zero-shot cloning from a single reference WAV, down to **36–46 ms per sentence** ([audio.cpp](https://github.com/0xShug0/audio.cpp) pocket-tts, ggml/CUDA). Hand it a clip; that's Cicero's voice now.
 - **Interrupt it mid-sentence** ("barge-in") — talk over Cicero on the browser and phone paths (and on the local mic when you enable full-duplex) and speech stops while cancellable brain adapters receive the interrupt; terminal-UI injection translates it to a bounded, best-effort terminal control. Only *speech* interrupts: a small local VAD model confirms a human is talking before anything cuts Cicero off, so keyboard clatter and background music don't — and with hands-free auto-start, the dormant page itself wakes when you speak. (Honest label: turn-taking with fast interruption — not a speech-to-speech model that comprehends while talking.)
+- **Knows when you're done talking** — opt-in semantic end-of-turn detection ([Smart-Turn](docs/turn-detection.md), the same approach ChatGPT and Gemini voice use, here fully local): a tiny model (~8 M params, ~12 ms on CPU) reads the prosody and completeness of what you said instead of just timing the pause — so it can answer as soon as your sentence is complete instead of waiting out a silence timer, and keeps the mic open when you trail off mid-thought. Works on the browser path and the local mic; one `turn:` block in the config enables it.
 - **Hears *how* you said it** — an optional speech-emotion sidecar ([emotion2vec](https://github.com/ddlBoJack/emotion2vec), CPU-only) classifies your tone in parallel with transcription and passes a confident non-neutral read to the agent — it knows the difference between "great" and *"great."* — at ~0 ms added latency, fully local.
 - **A whole office behind one call** — lanes give you a team of agents, each with its own voice and personality: *"let me talk to the coder"* transfers the call, *"roll call"* makes everyone check in. Cicero speaks up on its own too: task finished, morning briefing, quiet hours respected.
 - **Agent-agnostic by design** — the brain is a pluggable slot. Cicero owns the voice; your agent owns the doing.
@@ -138,7 +139,9 @@ Open `https://<box-ip>:8090/?token=<token>`, accept the self-signed certificate 
 - **Delegate real work by voice** — "fix the failing auth test and open a PR" gets acked in a second, built async, and announced when the PR is up. [The office →](docs/office.md)
 - **Talk to a team, not a bot** — per-lane agents with their own memory, voice, and personality; sticky transfers; roll call; standups read from the task board. [Lanes →](docs/office.md)
 - **Clone any voice you're authorized to use** — add one WAV for a supported provider, then `voice use` selects that provider and its safe reference or cloud ID end to end; per-employee voices can mix clones and presets. [Voice cloning →](docs/voice-cloning.md)
-- **Let it reach you** — proactive speech in the browser, Telegram voice notes, or a real phone call; quiet hours queue the news and the morning briefing reads it back — once, at *your* 8:30. [Notifications →](docs/notifications.md)
+- **Let it reach you** — proactive speech in the browser, Telegram voice notes, or a real phone call; quiet hours queue the news and the morning briefing reads it back — once, at *your* 8:30. Scheduled prompts go the other way: give a lane a prompt and a time in the config and it briefs you daily on whatever you asked. [Notifications →](docs/notifications.md)
+- **Follow up without re-explaining** — every delivered notification is also handed to the brain as context for your next turn: Cicero says a PR got a review comment, you answer *"take care of it"*, and the agent knows what *it* refers to. [Notifications →](docs/notifications.md)
+- **Log life in passing** — text the bot `log calories 650` or `log weight 82.4` and it appends to a local health record instantly, no agent turn; `cicero health recent|trend` reads it back, and `POST /api/health` bridges phone automations. [Notifications →](docs/notifications.md)
 - **Summon the call by voice** — say *"call me"* (or *"have Ada call me"*) on any voice surface and your phone rings via the Telegram sidecar. Intent, not wording: a small local classifier rings on *"I want you to call me"* but just answers *"did you call me?"*. [Notifications →](docs/notifications.md)
 - **Keep the sharp edges gated** — destructive tool calls are denied fail-closed until you approve them out loud. [Confirmation gate →](docs/brains.md)
 - **Take it off the leash** — `cicero do "<goal>"` runs local tool-use with spoken confirmation on anything mutating. [Computer use →](docs/daemon-mode.md)
@@ -148,7 +151,8 @@ Open `https://<box-ip>:8090/?token=<token>`, accept the self-signed certificate 
 ## How it compares
 
 Cicero's differentiator is the combination of local STT, local cloned-voice
-TTS, hot-mic barge-in, and delegation to autonomous coding agents:
+TTS, hot-mic barge-in, semantic turn detection, and delegation to autonomous
+coding agents:
 
 - **Compared with voice-chat stacks**, Cicero connects the conversation to a
   tool-using agent so turns can end in work products such as tasks, branches,
@@ -172,6 +176,7 @@ a live, interruptible spoken conversation, not transcribed voice messages.
 - [The office](docs/office.md) — lanes, transfers, personas, the operator pattern, an example team topology
 - [Brains](docs/brains.md) — every backend, verified ACP harnesses, the spoken confirmation gate, bring-your-own-harness
 - [Notifications](docs/notifications.md) — proactive voice-back, kanban watch, Telegram notes & calls, quiet hours + briefing
+- [Turn detection](docs/turn-detection.md) — semantic end-of-turn (Smart-Turn): why silence timers cut you off, the model server, tuning
 - [Voice cloning](docs/voice-cloning.md) — the library, engines and latencies, getting a clone to sound right
 - [Daemon mode](docs/daemon-mode.md) — local mic, full-duplex, double-clap, computer use
 - [Configuration](docs/configuration.md) — full config reference, default model stacks, quick intents, custom actions

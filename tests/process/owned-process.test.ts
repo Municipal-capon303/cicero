@@ -89,11 +89,17 @@ test("tree termination rejects invalid process-group identifiers before signalli
 test.skipIf(process.platform === "win32")(
   "shared tree termination escalates TERM-resistant leaders and descendants",
   async () => {
-    const childSource = `process.on("SIGTERM", () => {}); setInterval(() => {}, 1000);`;
+    // The PID line doubles as a readiness handshake: the child reports its own
+    // pid only after installing its SIGTERM handler (stdout inherited through
+    // the parent), and the parent installs its handler before spawning — so by
+    // the time the line arrives, both processes are provably TERM-resistant.
+    // Printing the pid before the handlers exist let SIGTERM land in the gap
+    // on slow CI runners, and the tree died fast enough to fail the >=30ms
+    // escalation floor below.
+    const childSource = `process.on("SIGTERM", () => {}); process.stdout.write(String(process.pid) + "\\n"); setInterval(() => {}, 1000);`;
     const parentSource = [
-      `const child = Bun.spawn([${JSON.stringify(process.execPath)}, "-e", ${JSON.stringify(childSource)}], { stdin: "ignore", stdout: "ignore", stderr: "ignore" });`,
-      `process.stdout.write(String(child.pid) + "\\n");`,
       `process.on("SIGTERM", () => {});`,
+      `Bun.spawn([${JSON.stringify(process.execPath)}, "-e", ${JSON.stringify(childSource)}], { stdin: "ignore", stdout: "inherit", stderr: "ignore" });`,
       `setInterval(() => {}, 1000);`,
     ].join("\n");
     const proc = spawnOwnedProcess([process.execPath, "-e", parentSource], {

